@@ -5,7 +5,14 @@
   "action": {
     "default_popup": "src/popup/index.html"
   },
+  "background": {
+    "service_worker": "src/background.js"
+  },
+  "host_permissions": ["<all_urls>"],
   "permissions": [
-    "alarms"
+    "alarms",
+    "activeTab",
+    "scripting",
+    "tabs"
   ]
 }
