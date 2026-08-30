@@ -1,4 +1,5 @@
-﻿chrome.runtime.onInstalled.addListener(async () => {
+﻿/*
+chrome.runtime.onInstalled.addListener(async () => {
     let oneSecond = 1 / 60;
     console.log("Start alarm");
     await chrome.alarms.create('check-video-timer',{
@@ -13,7 +14,7 @@ chrome.alarms.onAlarm.addListener(async (alarm) => { // Слушатель alarm
     const tab = await getCurrentTab();
     await chrome.scripting.executeScript({
         target: {tabId: tab.id}, // внедряем во все фреймы
-        func: getCountVideoFrame
+        func: getVideoPlayer
     }).catch(err => console.log(err))
 });
 
@@ -36,18 +37,8 @@ function getVideoPlayer() {
     alert(test);
 }
 
-function getVideoPlayers() {
-    return document.getElementsByTagName("video");
-}
-
 async function getCurrentTab() {
     let queryOptions = { active: true, lastFocusedWindow: true };
     let [tab] = await chrome.tabs.query(queryOptions);
     return tab;
-}
-
-function getCountVideoFrame() {
-    let video = document.getElementsByTagName("video");
-    let iframe = document.getElementsByTagName("iframe");
-    alert("video" + video.length + "iframe" + iframe.length);
-}
+}*/
