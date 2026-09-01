@@ -9,6 +9,7 @@ chrome.runtime.onInstalled.addListener(async () => {
     });
 });
 
+
 // Это, чтобы слать на сервер данные о просмотре - например каждый 5 сек
 chrome.alarms.onAlarm.addListener(async (alarm) => { // Слушатель alarm - когда возникает событие выполняем метод
     const tab = await getCurrentTab();
@@ -42,3 +43,7 @@ async function getCurrentTab() {
     let [tab] = await chrome.tabs.query(queryOptions);
     return tab;
 }*/
+
+chrome.runtime.onMessage.addListener((message, sender) => {
+    console.log("пришло" + `type: ${message.type}\ntitle: ${sender.tab.title}\ntime: ${message.time}\nduration: ${message.duration}`);
+})
