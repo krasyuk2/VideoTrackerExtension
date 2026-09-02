@@ -5,14 +5,17 @@ class VideoTracker {
         this.onTick = this.onTick.bind(this);
         this.onPause = this.onPause.bind(this);
         this.onPlay = this.onPlay.bind(this);
+        this.onSeeked = this.onSeeked.bind(this);
     }
 
     start() {
         document.addEventListener("timeupdate", this.onTick, true);
         document.addEventListener("pause", this.onPause, true);
         document.addEventListener("play",this.onPlay, true);
+        document.addEventListener("seeked", this.onSeeked, true);
     }
 
+    //Изменение времени
     onTick(event) {
         if(!(event.target instanceof HTMLVideoElement)) return;
         let video = event.target;
@@ -24,17 +27,25 @@ class VideoTracker {
         let time = Math.floor(video.currentTime);
         if(time % 5 === 0 && time !== st.lastSent) {
             st.lastSent = time;
-            let data = this.createVideoMessage("timeupdate", time, video.duration);
+            let data = this.createVideoMessage("timeupdate", time, video.duration, video.playbackRate);
             this.sendInfoToBackground(data);
         }
     }
+
+    //Поставили на паузу
     onPause(event) {
         return;
     }
+
+    //Начали воспроизведение
     onPlay(event) {
         return;
     }
 
+    //Перемотали
+    onSeeked(event) {
+        return;
+    }
 
     //Метод отправки данных в background
     sendInfoToBackground(data) {
@@ -43,8 +54,8 @@ class VideoTracker {
     }
 
     //Собираем модель для отправки данных
-    createVideoMessage(type = '', time = 0, duration = 0) {
-        return {type, time, duration};
+    createVideoMessage(type = '', time = 0, duration = 0, speed = 0) {
+        return {type, time, duration, speed};
     }
 }
 
