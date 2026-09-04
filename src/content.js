@@ -1,4 +1,5 @@
 ﻿//Сервис который инжектится в страницу, получает необходимую инфу
+//Можно добавить логику продолжения просмотра
 class VideoTracker {
     constructor() {
         this.state = new WeakMap();
@@ -17,8 +18,9 @@ class VideoTracker {
 
     //Изменение времени
     onTick(event) {
-        if(!(event.target instanceof HTMLVideoElement)) return;
-        let video = event.target;
+        let video = this.validateVideo(event);
+        if(video === null) return;
+
         let st = this.state.get(video);
         if(!st) {
             st = {lastSent: 0};
@@ -34,17 +36,29 @@ class VideoTracker {
 
     //Поставили на паузу
     onPause(event) {
-        return;
+        let video = this.validateVideo(event);
+        if(video === null) return;
+        let time = Math.floor(video.currentTime);
+        let data = this.createVideoMessage("pause", time, video.duration, video.playbackRate);
+        this.sendInfoToBackground(data);
     }
 
     //Начали воспроизведение
     onPlay(event) {
-        return;
+        let video = this.validateVideo(event);
+        if(video === null) return;
+        let time = Math.floor(video.currentTime);
+        let data = this.createVideoMessage("play", time, video.duration, video.playbackRate);
+        this.sendInfoToBackground(data);
     }
 
     //Перемотали
     onSeeked(event) {
-        return;
+        let video = this.validateVideo(event);
+        if(video === null) return;
+        let time = Math.floor(video.currentTime);
+        let data = this.createVideoMessage("seeked", time, video.duration, video.playbackRate);
+        this.sendInfoToBackground(data);
     }
 
     //Метод отправки данных в background
@@ -56,6 +70,12 @@ class VideoTracker {
     //Собираем модель для отправки данных
     createVideoMessage(type = '', time = 0, duration = 0, speed = 0) {
         return {type, time, duration, speed};
+    }
+
+    validateVideo(videoEvent) {
+        let videoPlayer = videoEvent.target
+        if(!(videoPlayer instanceof HTMLVideoElement)) return null;
+        return videoPlayer;
     }
 }
 

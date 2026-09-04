@@ -8,6 +8,7 @@ class BackgroundService {
     start() {
         //Получаем информацию, и делаем json
         chrome.runtime.onMessage.addListener((message, sender) => {
+            message.title = sender.tab.title;
             this.timeCollection.push(message);
         });
 
