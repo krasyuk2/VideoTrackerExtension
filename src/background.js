@@ -9,6 +9,7 @@ class BackgroundService {
         //Получаем информацию, и делаем json
         chrome.runtime.onMessage.addListener((message, sender) => {
             message.title = sender.tab.title;
+            this.validateMessage(message);
             this.timeCollection.push(message);
         });
 
@@ -26,13 +27,27 @@ class BackgroundService {
             if(this.timeCollection.length <= 0) return;
             let data = JSON.stringify(this.timeCollection);
             this.send(data);
-            this.timeCollection.length = 0;
         });
     }
 
     //Отправить массив данных на сервер
     send(data) {
+        fetch('http://127.0.0.1:5244/api/video/set-video-information', {
+            method: "POST",
+            headers: {
+                'Content-Type': 'application/json;charset=utf-8'
+            },
+            body: data
+        }).then(
+            resolve => console.log(resolve.text()),
+            error => console.log(error)
+        )
+    }
 
+    //Проверяем что числа не NaN
+    validateMessage(message) {
+        if(isNaN(message.duration)) message.duration = 0;
+        else message.duration = Math.floor(message.duration);
     }
 }
 let background = new BackgroundService();
