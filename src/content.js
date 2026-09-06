@@ -29,7 +29,8 @@ class VideoTracker {
         let time = Math.floor(video.currentTime);
         if(time % 5 === 0 && time !== st.lastSent) {
             st.lastSent = time;
-            let data = this.createVideoMessage("timeupdate", time, video.duration, video.playbackRate);
+            let data = this.createVideoMessage("timeupdate", time, video.duration,
+                video.playbackRate, video.poster);
             this.sendInfoToBackground(data);
         }
     }
@@ -39,7 +40,8 @@ class VideoTracker {
         let video = this.validateVideo(event);
         if(video === null) return;
         let time = Math.floor(video.currentTime);
-        let data = this.createVideoMessage("pause", time, video.duration, video.playbackRate);
+        let data = this.createVideoMessage("pause", time, video.duration,
+            video.playbackRate, video.poster);
         this.sendInfoToBackground(data);
     }
 
@@ -48,7 +50,8 @@ class VideoTracker {
         let video = this.validateVideo(event);
         if(video === null) return;
         let time = Math.floor(video.currentTime);
-        let data = this.createVideoMessage("play", time, video.duration, video.playbackRate);
+        let data = this.createVideoMessage("play", time, video.duration,
+            video.playbackRate, video.poster);
         this.sendInfoToBackground(data);
     }
 
@@ -57,7 +60,8 @@ class VideoTracker {
         let video = this.validateVideo(event);
         if(video === null) return;
         let time = Math.floor(video.currentTime);
-        let data = this.createVideoMessage("seeked", time, video.duration, video.playbackRate);
+        let data = this.createVideoMessage("seeked", time, video.duration,
+            video.playbackRate, video.poster);
         this.sendInfoToBackground(data);
     }
 
@@ -68,8 +72,8 @@ class VideoTracker {
     }
 
     //Собираем модель для отправки данных
-    createVideoMessage(type = '', time = 0, duration = 0, speed = 0) {
-        return {type, time, duration, speed};
+    createVideoMessage(type = '', time = 0, duration = 0, speed = 0, poster = '',) {
+        return {type, time, duration, speed, poster};
     }
 
     validateVideo(videoEvent) {

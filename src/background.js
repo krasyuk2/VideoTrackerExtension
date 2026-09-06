@@ -9,6 +9,8 @@ class BackgroundService {
         //Получаем информацию, и делаем json
         chrome.runtime.onMessage.addListener((message, sender) => {
             message.title = sender.tab.title;
+            message.src = sender.url;
+            message.webSiteUrl = sender.tab.url;
             this.validateMessage(message);
             this.timeCollection.push(message);
         });
