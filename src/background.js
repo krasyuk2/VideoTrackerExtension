@@ -28,6 +28,7 @@ class BackgroundService {
         chrome.alarms.onAlarm.addListener(async (alarm) => {
             if(this.timeCollection.length <= 0) return;
             let data = JSON.stringify(this.timeCollection);
+            console.log(data);
             this.send(data);
         });
     }

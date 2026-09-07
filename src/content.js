@@ -7,9 +7,11 @@ class VideoTracker {
         this.onPause = this.onPause.bind(this);
         this.onPlay = this.onPlay.bind(this);
         this.onSeeked = this.onSeeked.bind(this);
+        this.ogProperty = {};
     }
 
     start() {
+        this.setOgProperty();
         document.addEventListener("timeupdate", this.onTick, true);
         document.addEventListener("pause", this.onPause, true);
         document.addEventListener("play",this.onPlay, true);
@@ -72,8 +74,17 @@ class VideoTracker {
     }
 
     //Собираем модель для отправки данных
-    createVideoMessage(type = '', time = 0, duration = 0, speed = 0, poster = '',) {
-        return {type, time, duration, speed, poster};
+    createVideoMessage(type = '', time = 0, duration = 0, speed = 0, poster = '') {
+        let og = this.ogProperty;
+        return {type, time, duration, speed, poster, og};
+    }
+
+    // Получение со страницы og атрибутов
+    setOgProperty() {
+        let ogProperties = document.querySelectorAll("meta[property^='og:']");
+        ogProperties.forEach(value => {
+            this.ogProperty[value.getAttribute("property")] = value.getAttribute('content');
+        })
     }
 
     validateVideo(videoEvent) {
