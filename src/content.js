@@ -2,16 +2,19 @@
 //Можно добавить логику продолжения просмотра
 class VideoTracker {
     constructor() {
-        this.state = new WeakMap();
         this.onTick = this.onTick.bind(this);
         this.onPause = this.onPause.bind(this);
         this.onPlay = this.onPlay.bind(this);
         this.onSeeked = this.onSeeked.bind(this);
-        this.ogProperty = {};
+        this.timeArray = [];
     }
 
     start() {
-        this.setOgProperty();
+        if(window === window.top) {
+            let og = this.getOgProperty();
+            this.sendInfoToBackground({type: "metadata", og: og});
+        }
+
         document.addEventListener("timeupdate", this.onTick, true);
         document.addEventListener("pause", this.onPause, true);
         document.addEventListener("play",this.onPlay, true);
@@ -23,16 +26,11 @@ class VideoTracker {
         let video = this.validateVideo(event);
         if(video === null) return;
 
-        let st = this.state.get(video);
-        if(!st) {
-            st = {lastSent: 0};
-            this.state.set(video,st);
-        }
         let time = Math.floor(video.currentTime);
-        if(time % 5 === 0 && time !== st.lastSent) {
-            st.lastSent = time;
-            let data = this.createVideoMessage("timeupdate", time, video.duration,
-                video.playbackRate, video.poster);
+        this.timeArray.push(time);
+        if(this.timeArray.length >= 5) {
+            let data = this.createVideoMessage("timeupdate", this.timeArray, video.duration,
+                video.playbackRate);
             this.sendInfoToBackground(data);
         }
     }
@@ -42,8 +40,8 @@ class VideoTracker {
         let video = this.validateVideo(event);
         if(video === null) return;
         let time = Math.floor(video.currentTime);
-        let data = this.createVideoMessage("pause", time, video.duration,
-            video.playbackRate, video.poster);
+        let data = this.createVideoMessage("pause", [time], video.duration,
+            video.playbackRate);
         this.sendInfoToBackground(data);
     }
 
@@ -52,8 +50,8 @@ class VideoTracker {
         let video = this.validateVideo(event);
         if(video === null) return;
         let time = Math.floor(video.currentTime);
-        let data = this.createVideoMessage("play", time, video.duration,
-            video.playbackRate, video.poster);
+        let data = this.createVideoMessage("play", [time], video.duration,
+            video.playbackRate);
         this.sendInfoToBackground(data);
     }
 
@@ -62,9 +60,13 @@ class VideoTracker {
         let video = this.validateVideo(event);
         if(video === null) return;
         let time = Math.floor(video.currentTime);
-        let data = this.createVideoMessage("seeked", time, video.duration,
-            video.playbackRate, video.poster);
+        let data = this.createVideoMessage("seeked", [time], video.duration,
+            video.playbackRate);
         this.sendInfoToBackground(data);
+    }
+
+    setVideoFingerPrint(video) {
+        return video.currentSrc + video.duration;
     }
 
     //Метод отправки данных в background
@@ -74,17 +76,20 @@ class VideoTracker {
     }
 
     //Собираем модель для отправки данных
-    createVideoMessage(type = '', time = 0, duration = 0, speed = 0, poster = '') {
-        let og = this.ogProperty;
-        return {type, time, duration, speed, poster, og};
+    createVideoMessage(type = '', time = [], duration = 0, speed = 0) {
+        return {type, time, duration, speed};
     }
 
     // Получение со страницы og атрибутов
-    setOgProperty() {
+    getOgProperty() {
+        let ogProperty = {};
         let ogProperties = document.querySelectorAll("meta[property^='og:']");
         ogProperties.forEach(value => {
-            this.ogProperty[value.getAttribute("property")] = value.getAttribute('content');
+            let content = value.getAttribute("content");
+            if(content)
+               ogProperty[value.getAttribute("property").slice(3)] = content;
         })
+        return ogProperty;
     }
 
     validateVideo(videoEvent) {

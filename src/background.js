@@ -3,11 +3,19 @@ class BackgroundService {
 
     constructor() {
         this.timeCollection = [];
+        this.ogProperty = {};
     }
 
     start() {
         //Получаем информацию, и делаем json
         chrome.runtime.onMessage.addListener((message, sender) => {
+            if(message.type === "metadata" && sender.frameId === 0) {
+                this.ogProperty = message.og;
+                return;
+            }
+
+            message.og = this.ogProperty;
+            console.log(JSON.stringify(message.og));
             message.title = sender.tab.title;
             message.src = sender.url;
             message.webSiteUrl = sender.tab.url;
@@ -28,7 +36,6 @@ class BackgroundService {
         chrome.alarms.onAlarm.addListener(async (alarm) => {
             if(this.timeCollection.length <= 0) return;
             let data = JSON.stringify(this.timeCollection);
-            console.log(data);
             this.send(data);
         });
     }
@@ -42,7 +49,10 @@ class BackgroundService {
             },
             body: data
         }).then(
-            resolve => console.log(resolve.text()),
+            resolve => {
+                console.log(resolve.text());
+                this.timeCollection.length = 0;
+            },
             error => console.log(error)
         )
     }
