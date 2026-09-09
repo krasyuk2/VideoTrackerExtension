@@ -7,6 +7,7 @@ class VideoTracker {
         this.onPlay = this.onPlay.bind(this);
         this.onSeeked = this.onSeeked.bind(this);
         this.timeArray = [];
+        this.state = new WeakMap();
     }
 
     start() {
@@ -27,7 +28,17 @@ class VideoTracker {
         if(video === null) return;
 
         let time = Math.floor(video.currentTime);
+
+        let st = this.state.get(video);
+        if(!st) {
+            st = {lastSend: -1}
+            this.state.set(video, st);
+        }
+
+        if(this.timeArray.includes(time) || st.lastSend === time) return;
         this.timeArray.push(time);
+
+        st.lastSend = time;
         if(this.timeArray.length >= 5) {
             let data = this.createVideoMessage("timeupdate", this.timeArray, video.duration,
                 video.playbackRate);
@@ -65,14 +76,12 @@ class VideoTracker {
         this.sendInfoToBackground(data);
     }
 
-    setVideoFingerPrint(video) {
-        return video.currentSrc + video.duration;
-    }
-
     //Метод отправки данных в background
     sendInfoToBackground(data) {
-        chrome.runtime.sendMessage(data)
-            .catch(err => console.log(err));
+        chrome.runtime.sendMessage(data).then(
+            result => this.timeArray.length = 0,
+            error => console.log(error)
+        )
     }
 
     //Собираем модель для отправки данных
